@@ -6,8 +6,7 @@ hb = function(){
     if((location.href.slice(0,16)=="http://localhost")||(location.href.slice(0,5)=="https")){
         hb.fitbit() // starting with fitbits
     }else{ // force ssl
-        var newHref=location.href.slice(0,4)+'s'+location.href.slice(4)
-        location.href=newHref
+        alert("Please use use https with healthBit instead of http to benefict from encrypted transfer, it's safer")
     }
 }
 
