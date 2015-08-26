@@ -13,7 +13,9 @@ hb = function(){
 hb.fitbit=function(){
     // login fitbit
     if(location.hash.length==0){ // if not returning from login
-        location.href='https://www.fitbit.com/oauth2/authorize?client_id=229TL4&redirect_uri='+location.href+'&response_type=token&scope=profile'
+        var href=location.href
+        if(href.slice(-1)=='#'){href=href.slice(0,-1)}
+        location.href='https://www.fitbit.com/oauth2/authorize?client_id=229TL4&redirect_uri='+href+'&response_type=token&scope=profile'
     }else{
         hb.fitbit.login={}
         location.hash.slice(1).split('&').map(
