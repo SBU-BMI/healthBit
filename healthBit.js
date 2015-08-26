@@ -6,7 +6,8 @@ hb = function(){
     if((location.href.slice(0,16)=="http://localhost")||(location.href.slice(0,5)=="https")){
         hb.fitbit() // starting with fitbits
     }else{ // force ssl
-        location.href=location.href.slice(0,4)+'s'+location.href.slice(5)
+        var newHref=location.href.slice(0,4)+'s'+location.href.slice(5)
+        location.href=newHref
     }
 }
 
