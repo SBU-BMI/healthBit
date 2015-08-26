@@ -3,8 +3,11 @@ console.log('healthBit.js base library loaded')
 // ini
 hb = function(){
     // ini
-    hb.fitbit() // starting with fitbits
-
+    if((location.href.slice(0,21)=="http://localhost:8000")||(location.href.slice(0,5)=="https")){
+        hb.fitbit() // starting with fitbits
+    }else{ // force ssl
+        location.href=location.href.slice(0,4)+'s'+location.href.slice(5)
+    }
 }
 
 hb.fitbit=function(){
