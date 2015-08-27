@@ -26,14 +26,12 @@ hb.fitbit=function(){
             }
         )
         location.hash=""
-        console.log('login',hb.fitbit.login)
+        //console.log('login',hb.fitbit.login)
             
         $.ajax({
             url : "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/profile.json",
             headers: {'Authorization' : hb.fitbit.login.token_type+' '+hb.fitbit.login.access_token}
         }).then(function(x){
-            lala=x
-            console.log('done')
             var sp=hb.fitbit.login.scope.split('+').map(function(s){
                 return '<li>'+s+'</li>'
             })
@@ -41,17 +39,14 @@ hb.fitbit=function(){
             sp='<ol>'+sp.join('')+'</ol>'
             $('<h2 style="color:maroon">Using OAUTH 2.0</h2><div id="healthBitScope" style="color:blue"> You gave me OAUTH to engage the following services:'+sp+'</div>').appendTo(healthBitDiv)
             $('<h3 style="color:maroon">Reading from your <i style="color:blue">profile</i> service</h3>').appendTo(healthBitDiv)
-            $('<div style="color:navy"><p>Could be reading from any of the <span style="color:red">other '+(spn-1)+' services</span> listed above ...</p><p>Have a look at the <a href="https://dev.fitbit.com/docs/activity/" target=_blank>fitbit API documentation</a> to find out what type of data may be available.</p></div>').appendTo(healthBitDiv)
+            $('<div style="color:navy"><p>Could instead be reading from any of the <span style="color:red">other '+(spn-1)+' services</span> listed above ...</p><p>Have a look at the <a href="https://dev.fitbit.com/docs/activity/" target=_blank>fitbit API documentation</a> to find out what type of data may be available.</p></div>').appendTo(healthBitDiv)
             var ol='<ol style="color:blue">'
             Object.getOwnPropertyNames(x.user).map(function(p){
                 ol+='<li>'+p+': <span style="color:red">'+x.user[p]+'</span></li>'
             })
             ol+='</ol>'
             $(ol).appendTo(healthBitDiv)
-
-
         })
-        4
     }
 }
 
