@@ -35,6 +35,8 @@ hb.fitbit=function(){
             var sp=hb.fitbit.login.scope.split('+').map(function(s){
                 return '<li>'+s+'</li>'
             })
+            hb.fitbit.info=x
+            hb.fitbit.info.date=new Date
             var spn=hb.fitbit.login.scope.split('+').length
             sp='<ol>'+sp.join('')+'</ol>'
             $('<h2 style="color:maroon">Using OAUTH 2.0</h2><div id="healthBitScope" style="color:blue"> You gave me OAUTH to engage the following services:'+sp+'</div>').appendTo(healthBitDiv)
@@ -46,8 +48,27 @@ hb.fitbit=function(){
             })
             ol+='</ol>'
             $(ol).appendTo(healthBitDiv)
+            // full App
+            hb.app(healthBitDiv)
+
         })
     }
+}
+
+hb.app=function(div){ // full App
+    console.log('full app being assembled ')
+    $('<h3 style="color:maroon">Tentative App #1 <hr></h3>').appendTo(div)
+    // app1 configured as a table within hosting div
+    $('<div id="app1"></div>').appendTo(div)
+    $('<table id="app1Table"><tr id="app1Head"><td><img src="helilogo.png" width=60><br><i style="color:maroon">Helicopter<hr></i></td><td style="vertical-align:top" align="right">Logged in as <span style="color:blue">'+hb.fitbit.info.user.displayName+'</span> at <span style="color:blue">'+hb.fitbit.info.date.toString().slice(4,24)+'</span><p id="app1Msg" style="color:red">processing ...</p></td></tr><td id="app1Options"></td><td><tr></tr></table>').appendTo(app1)
+    // filing options
+    hb.fitbit.login.scopes=hb.fitbit.login.scope.split('+')
+    hb.fitbit.login.scopes.forEach(function(s){
+        $('<p id="app1_'+s+'" style="color:gray">'+s[0].toUpperCase()+s.slice(1)+'</p>').appendTo(app1Options)
+    })
+    
+
+
 }
 
 // ini
