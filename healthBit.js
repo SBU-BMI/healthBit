@@ -4,19 +4,28 @@ console.log('healthBit.js base library loaded')
 hb = function(){
     // ini
     if((location.href.slice(0,16)=="http://localhost")||(location.href.slice(0,5)=="https")){
-        hb.fitbit() // starting with fitbits
+        hb.connect()
+        if(sessionStorage.logingIntoFitbit){
+            hb.fitbit()
+        }
+        //hb.fitbit() // starting with fitbits
     }else{ // force ssl
         document.location.protocol='https:'
     }
 }
 
-hb.fitbit=function(){
+hb.fitbit=function(scopes){
+    if(!scopes){scopes='profile'}
+    else{scopes=scopes.join('%20')} // scopes expected as an array
     // login fitbit
-    if(location.hash.length==0){ // if not returning from login
+    if(!sessionStorage.logingIntoFitbit){ // if not returning from login then this is about loggin in
         var href=location.href
         if(href.slice(-1)=='#'){href=href.slice(0,-1)}
-        location.href='https://www.fitbit.com/oauth2/authorize?client_id=229TL4&redirect_uri='+href+'&response_type=token&scope=profile'
-    }else{
+        //location.href='https://www.fitbit.com/oauth2/authorize?client_id=229TL4&expires_in=2592000&redirect_uri='+href+'&response_type=token&scope='+scopes
+        sessionStorage.logingIntoFitbit=new Date()
+        location.href='https://www.fitbit.com/oauth2/authorize?client_id=229TL4&redirect_uri='+href+'&device=fitbit&response_type=token&scope='+scopes
+    }else{ // logged in fitbit
+        sessionStorage.removeItem('logingIntoFitbit')
         hb.fitbit.login={}
         location.hash.slice(1).split('&').map(
             function(pp){
@@ -26,8 +35,37 @@ hb.fitbit=function(){
             }
         )
         location.hash=""
+        // assemble fitbit UI
+        // 1. Prepare div
+        if($('#healthBitFitbitConnected').length==0){ // prepare div
+            var div = document.createElement('div')
+            div.id = "healthBitFitbitConnected"
+            healthBitFitbit.appendChild(div)
+        }else{
+            var div = document.getElementById("healthBitFitbitConnected")
+        }
+        
+        // display connected
+        div.innerHTML='Connected:'
+        // scan each of the scopes
+        hb.fitbit.login.scope=hb.fitbit.login.scope.split('+')
+        // match checkboxes
+        $('#healthBitFitbit > input').each(function(i,el){
+            if(hb.fitbit.login.scope.indexOf(el.value)<0){
+                el.checked=false
+            }
+        })
+        hb.fitbit.login.scope.forEach(function(sc){
+            var divsc = document.createElement('div')
+            divsc.id='fitbitScope_'+sc
+            divsc.innerHTML=sc
+            div.appendChild(divsc)
+            // get the data
+            //hb.fitbit.get(sc)
+        })
         //console.log('login',hb.fitbit.login)
-            
+        // old stuff, remove later   
+        if(false){ 
         $.ajax({
             url : "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/profile.json",
             headers: {'Authorization' : hb.fitbit.login.token_type+' '+hb.fitbit.login.access_token}
@@ -37,6 +75,7 @@ hb.fitbit=function(){
             })
             hb.fitbit.info=x
             hb.fitbit.info.date=new Date
+            
             var spn=hb.fitbit.login.scope.split('+').length
             sp='<ol>'+sp.join('')+'</ol>'
             $('<h2 style="color:maroon">Using OAUTH 2.0</h2><div id="healthBitScope" style="color:blue"> You gave me OAUTH to engage the following services:'+sp+'</div>').appendTo(healthBitDiv)
@@ -52,8 +91,36 @@ hb.fitbit=function(){
             hb.app(healthBitDiv)
 
         })
+        }
     }
 }
+
+hb.fitbit.get=function(scope,parms){
+
+    /*
+    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id
+    switch(scope) {
+        case "nutrition":
+            code block
+            break;
+        case n:
+            code block
+            break;
+        default:
+            default code block
+    }
+    */
+
+    $.ajax({
+        url : "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/profile.json",
+        headers: {'Authorization' : hb.fitbit.login.token_type+' '+hb.fitbit.login.access_token}
+    }).then(function(x){
+        //console.log(x)
+        //cb(x)
+        hb.fitbit['get_'+scope](x,parms)
+    })
+}
+
 
 hb.app=function(div){ // full App
     console.log('full app being assembled ')
@@ -66,11 +133,57 @@ hb.app=function(div){ // full App
     hb.fitbit.login.scopes.forEach(function(s){
         $('<p id="app1_'+s+'" style="color:gray">'+s[0].toUpperCase()+s.slice(1)+'</p>').appendTo(app1Options)
     })
+}
+
+// connect
+hb.connect=function(){
+    var h = '<h3 style="color:maroon">Connect your devices</h3>'
     
+    // FitBit
+    h+='<div id="healthBitFitbit">'
+    h+='<h4 style="color:maroon"healthBitConnectFitbit><li>FitBit <a href="https://www.fitbit.com/" target="_blank"><i class="fa fa-external-link"></i></a></li></h4>'
+    var scp = ['activity','heartrate','location','nutrition','settings','sleep','social','weight']
+    for(var i=0;i<scp.length;i++){
+       var p=scp[i]
+       h+=p+':<input id="'+p+'Checkbox" type="checkbox" checked="true" value='+p+'> '
+    }
+    h+='<br><button id="connectFitBit" class="btn-primary" onclick="hb.connectFitBit(this)">Connect your fitbit</button> for the selected scopes.'
+    h+='</div>'
+    // connect your own
+    h+='<div id="healthBitChoseYourOwn">'
+    h+='<h4 style="color:maroon"><li>Chose your own, say for <input id="choseYourOwnInput" type="text" value="heart" size=5 style="color:blue;text-align:center"> monitoring <a  id="choseYourOwnLink" href="https://www.wearable-technologies.com/?s=heart" target="_blank"><i class="fa fa-external-link"></i></a></li></h4>'
+    h+='<a href="mailto:jonas.almeida@stonybrookmedicine.edu" target="_blank">Tell us</a> about a device you want to use at Stony Brook Univ, get us one, and we will try to add it here.'
+    h+='</div>'
+   
 
+    //https://www.wearable-technologies.com/2015/04/wearables-in-healthcare/
 
+    hbAction.innerHTML=h
+    // even listeners
+    choseYourOwnInput.onkeyup=function(evt){
+        this.size=Math.max(4,this.value.length) // adjust size
+        choseYourOwnLink.href=choseYourOwnLink.href.match(/[^?]*/)[0]+'?s='+this.value
+        if(evt.keyCode==13){
+            choseYourOwnLink.click()
+        }
+        4
+    }
+}
+
+hb.connectFitBit=function(that){
+    // get scopes
+    var scopes=['profile'] // also profile by default]
+    $('#healthBitFitbit > input').each(function(i,el){
+        //console.log(i,el)
+        if(el.checked){
+            scopes.push(el.value)
+        }
+    })
+    hb.fitbit(scopes)
+    
 }
 
 // ini
-
-hb()
+$(document).ready(function(){
+    hb()
+})
