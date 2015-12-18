@@ -55,11 +55,18 @@ hb.fitbit=function(scopes){
                 el.checked=false
             }
         })
+        hb.fitbit.scope={} // data about each scope will go here
         hb.fitbit.login.scope.forEach(function(sc){
             var divsc = document.createElement('div')
             divsc.id='fitbitScope_'+sc
-            divsc.innerHTML=sc
+            divsc.innerHTML='<h4 style="color:navy">'+sc+'</h4>'
             div.appendChild(divsc)
+            // get some data for the given scope
+            if(sc=='activity'){
+                hb.fitbit.getActivity(divsc)
+            }
+
+
             // get the data
             //hb.fitbit.get(sc)
         })
@@ -95,29 +102,32 @@ hb.fitbit=function(scopes){
     }
 }
 
-hb.fitbit.get=function(scope,parms){
-
-    /*
-    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id
-    switch(scope) {
-        case "nutrition":
-            code block
-            break;
-        case n:
-            code block
-            break;
-        default:
-            default code block
-    }
-    */
-
-    $.ajax({
-        url : "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/profile.json",
+hb.fitbit.get=function(url,cb){
+   $.ajax({
+        url : url,
         headers: {'Authorization' : hb.fitbit.login.token_type+' '+hb.fitbit.login.access_token}
     }).then(function(x){
-        //console.log(x)
-        //cb(x)
-        hb.fitbit['get_'+scope](x,parms)
+        cb(x)
+    })
+}
+
+hb.fitbit.getActivity=function(div){
+    // https://dev.fitbit.com/docs/activity
+    //var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/date/today.json"
+    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/steps/date/today/1y.json"
+    hb.fitbit.get(url,function(x){
+        var time=[],steps=[]
+        x["activities-steps"].forEach(function(xi,i){
+            time[i]=new Date(xi.dateTime)
+            steps[i]=parseFloat(xi.value)
+        })
+        var divPlot=document.createElement('div')
+        div.appendChild(divPlot)
+        Plotly.plot( divPlot, [{
+	       x: time,
+	       y: steps }], {
+	       margin: { t: 0 } } 
+	    )
     })
 }
 
