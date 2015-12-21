@@ -144,9 +144,12 @@ hb.fitbit.getHeartrate=function(div){
             time[i]=new Date(xi.dateTime)
             xi.value.heartRateZones.forEach(function(v){
             	if(!heart[v.name]){
-            		heart[v.name]=[]
+            		heart[v.name]={
+            		    values:[],
+            		    range:[v.min,v.max]
+            		}
             	}else{
-            		heart[v.name][i]=v.minutes
+            		heart[v.name].values[i]=v.minutes
             	}
             })
             4
@@ -157,17 +160,17 @@ hb.fitbit.getHeartrate=function(div){
         	[
         		{
         			x: time,
-        			y: heart["Out of Range"],
+        			y: heart["Out of Range"].values,
         			mode: 'markers',
         			type: 'scatter',
-        			name: "Out of Range"
+        			name: "Out of Range ("+heart["Out of Range"].range.join('-')+")"
         		},
         		{
         			x: time,
-        			y: heart["Fat Burn"],
+        			y: heart["Fat Burn"].values,
         			mode: 'markers',
         			type: 'scatter',
-        			name: "Fat Burn"
+        			name: "Fat Burn ("+heart["Fat Burn"].range.join('-')+")"
         		}
 	       	], 
 	       	{margin: { t: 0 } } 
