@@ -65,6 +65,9 @@ hb.fitbit=function(scopes){
             if(sc=='activity'){
                 hb.fitbit.getActivity(divsc)
             }
+            if(sc=='heartrate'){
+                hb.fitbit.getHeartrate(divsc)
+            }
 
 
             // get the data
@@ -114,7 +117,7 @@ hb.fitbit.get=function(url,cb){
 hb.fitbit.getActivity=function(div){
     // https://dev.fitbit.com/docs/activity
     //var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/date/today.json"
-    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/steps/date/today/1y.json"
+    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/steps/date/today/1m.json"
     hb.fitbit.get(url,function(x){
         var time=[],steps=[]
         x["activities-steps"].forEach(function(xi,i){
@@ -127,6 +130,47 @@ hb.fitbit.getActivity=function(div){
 	       x: time,
 	       y: steps }], {
 	       margin: { t: 0 } } 
+	    )
+    })
+}
+
+hb.fitbit.getHeartrate=function(div){
+    // https://dev.fitbit.com/docs/heart-rate
+    //var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/date/today.json"
+    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/heart/date/today/1m.json"
+    hb.fitbit.get(url,function(x){
+        var time=[],heart={}
+        x["activities-heart"].forEach(function(xi,i){
+            time[i]=new Date(xi.dateTime)
+            xi.value.heartRateZones.forEach(function(v){
+            	if(!heart[v.name]){
+            		heart[v.name]=[]
+            	}else{
+            		heart[v.name][i]=v.minutes
+            	}
+            })
+            4
+        })
+        var divPlot=document.createElement('div')
+        div.appendChild(divPlot)
+        Plotly.plot( divPlot,
+        	[
+        		{
+        			x: time,
+        			y: heart["Out of Range"],
+        			mode: 'markers',
+        			type: 'scatter',
+        			name: "Out of Range"
+        		},
+        		{
+        			x: time,
+        			y: heart["Fat Burn"],
+        			mode: 'markers',
+        			type: 'scatter',
+        			name: "Fat Burn"
+        		}
+	       	], 
+	       	{margin: { t: 0 } } 
 	    )
     })
 }
