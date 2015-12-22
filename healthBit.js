@@ -141,10 +141,18 @@ hb.fitbit.getActivity=function(div,range,cb){
             time[i]=new Date(xi.dateTime)
             steps[i]=parseFloat(xi.value)
         })
-        Plotly.plot( divPlot, [{
-	       x: time,
-	       y: steps }], {
-	       margin: { t: 0 } } 
+        Plotly.plot( divPlot, 
+        	[
+        	   {
+	       	   	x: time,
+	       	   	y: steps 
+	           }
+	       	],
+	       	{
+	       	   margin: { t: 0 },
+	       	   yaxis: {title: 'steps / day'},
+               xaxis: {title: 'time'}
+	       	} 
 	    )
     })
     return $(divPlot).promise() // so we get promises
@@ -190,7 +198,11 @@ hb.fitbit.getHeartrate=function(div,range){
         			name: "Fat Burn ("+heart["Fat Burn"].range.join('-')+")"
         		}
 	       	], 
-	       	{margin: { t: 0 } } 
+	       	{
+	       	   margin: { t: 0 },
+	       	   yaxis: {title: 'minutes / day'},
+               xaxis: {title: 'time'}
+	       	} 
 	    )
     })
     return $(divPlot).promise() // so we get promises
