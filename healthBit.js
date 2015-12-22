@@ -63,10 +63,24 @@ hb.fitbit=function(scopes){
             div.appendChild(divsc)
             // get some data for the given scope
             if(sc=='activity'){
-                hb.fitbit.getActivity(divsc)
+                hb.fitbit.getActivity(divsc,'1y.json')
+                  .then(function(){
+                      hb.fitbit.getActivity(divsc,'1m.json')
+                  })
+                  /*
+                  .then(function(){
+                      hb.fitbit.getActivity(divsc,'1w.json')
+                  })
+                  .then(function(){
+                      hb.fitbit.getActivity(divsc,'1d.json')
+                  })
+                  */
             }
             if(sc=='heartrate'){
-                hb.fitbit.getHeartrate(divsc)
+                hb.fitbit.getHeartrate(divsc,'1m.json')
+                  .then(function(){
+                      hb.fitbit.getHeartrate(divsc,'1w.json')
+                  })
             }
 
 
@@ -114,30 +128,35 @@ hb.fitbit.get=function(url,cb){
     })
 }
 
-hb.fitbit.getActivity=function(div){
+hb.fitbit.getActivity=function(div,range,cb){
+    if(!range){range='1m.json'}
     // https://dev.fitbit.com/docs/activity
     //var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/date/today.json"
-    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/steps/date/today/1m.json"
+    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/steps/date/today/"+range
+    var divPlot=document.createElement('div')
+    div.appendChild(divPlot)
     hb.fitbit.get(url,function(x){
         var time=[],steps=[]
         x["activities-steps"].forEach(function(xi,i){
             time[i]=new Date(xi.dateTime)
             steps[i]=parseFloat(xi.value)
         })
-        var divPlot=document.createElement('div')
-        div.appendChild(divPlot)
         Plotly.plot( divPlot, [{
 	       x: time,
 	       y: steps }], {
 	       margin: { t: 0 } } 
 	    )
     })
+    return $(divPlot).promise() // so we get promises
 }
 
-hb.fitbit.getHeartrate=function(div){
+hb.fitbit.getHeartrate=function(div,range){
+    if(!range){range='1m.json'}
     // https://dev.fitbit.com/docs/heart-rate
     //var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/date/today.json"
-    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/heart/date/today/1m.json"
+    var url = "https://api.fitbit.com/1/user/"+hb.fitbit.login.user_id+"/activities/heart/date/today/"+range
+    var divPlot=document.createElement('div')
+    div.appendChild(divPlot)
     hb.fitbit.get(url,function(x){
         var time=[],heart={}
         x["activities-heart"].forEach(function(xi,i){
@@ -154,8 +173,6 @@ hb.fitbit.getHeartrate=function(div){
             })
             4
         })
-        var divPlot=document.createElement('div')
-        div.appendChild(divPlot)
         Plotly.plot( divPlot,
         	[
         		{
@@ -176,6 +193,7 @@ hb.fitbit.getHeartrate=function(div){
 	       	{margin: { t: 0 } } 
 	    )
     })
+    return $(divPlot).promise() // so we get promises
 }
 
 
